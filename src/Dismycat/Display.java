@@ -25,7 +25,7 @@ public class Display implements KeyListener{
 		public int yy = 75;
 		public int tile = 32;
 		public int wid = 32; //(tiles)
-		public int len = 17; //(tiles)
+		public int hig = 17; //(tiles)
 		public int l;
 		public int w;
 		private boolean leftHeld = false;
@@ -45,6 +45,7 @@ public class Display implements KeyListener{
 		
 		BufferedImage img = null;
 		BufferedImage img2 = null;
+		BufferedImage img3 = null;
 
 		//private int x;
 
@@ -163,6 +164,12 @@ public class Display implements KeyListener{
 				img = ImageIO.read(new File("bgyellow.png"));
 			}	
 				catch (IOException e1){}
+		
+		try
+			{
+				img3 = ImageIO.read(new File("bgblue.png"));
+			}	
+				catch (IOException e1){}
 									
 			}
 		
@@ -186,7 +193,7 @@ public class Display implements KeyListener{
 			getImages(g);
 			
 			l = 0;
-			while(l<len) //c=1; c <= 9990; c++
+			while(l<hig) //c=1; c <= 9990; c++
 			{
 				
 				w = 0;
@@ -195,7 +202,15 @@ public class Display implements KeyListener{
 					
 					int placex = tile*w;
 					int placey = tile*l;
-					g.drawImage(img,placex,placey,null);
+					
+					if(l != 8||w == 12||w == 13)
+					{
+						g.drawImage(img,placex,placey,null);
+					}
+					else {
+						g.drawImage(img3,placex,placey,null);
+
+					}
 									
 					//System.out.printf("%d, %d, %d, %d \n", placex, placey, l, w);
 					w++;
