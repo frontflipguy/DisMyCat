@@ -15,27 +15,32 @@ public class Cat extends java.lang.Object{
 	
 		
 		public void moveLeft() {
-		
-			x=x-sp;
-			System.out.printf("%s\n",x);
+			if (x > -4) {
+				x=x-sp;
+				System.out.printf("%s\n",x);
+			}
+			
 			}
 		
 		public void moveRight() {
-			
-			x=x+sp;
-			System.out.printf("%s\n",x);
+			if (x < 966) {
+				x=x+sp;
+				System.out.printf("%s\n",x);
+			}
 			}
 		
 		public void moveUp() {
-			
-			y=y-sp;
-			System.out.printf("%s\n",y);
+			if (y > 0) {
+				y=y-sp;
+				System.out.printf("%s\n",y);
+			}
 			}
 		
 		public void moveDown() {
-			
-			y=y+sp;
-			System.out.printf("%s\n",y);
+			if (y < 408) {
+				y=y+sp;
+				System.out.printf("%s\n",y);
+			}
 			}
 
 
