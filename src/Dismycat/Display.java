@@ -24,12 +24,21 @@ public class Display implements KeyListener{
 		public int w = 0;
 		int ar1;
 		int ar2;
-		String whichMap = "map2.txt";
+		int lootLocx;
+		int lootLocy;
+		String whichMap = "river.txt";
 				
 		private boolean leftHeld = false;
 		private boolean rightHeld = false;
 		private boolean upHeld = false;
 		private boolean downHeld = false;
+		private boolean lootFound = false;
+		private boolean pickUp;
+		private boolean loot1off = true;
+		private boolean loot2off = true;
+		private boolean loot3off = true;
+		private boolean loot4off = true;
+		private boolean loot5off = true;
 		private Cat cat = new Cat(playWidth/2, playHeight/2);
 		private loadImage images;
 		
@@ -41,9 +50,6 @@ public class Display implements KeyListener{
 		public static int playHeight = 544; // The height of the play area (in pixels)
 		
 		BufferedImage img = null;
-		BufferedImage img2 = null;
-		BufferedImage img3 = null;
-		int[][] map = new int[hig][wid];
 		static char[][] mapSolids = new char[hig + ((playHeight/2)/tile + 15)][wid + ((playWidth/2)/tile) + 15]; //the +15 is for some wiggle room
 		
 		
@@ -52,7 +58,11 @@ public class Display implements KeyListener{
 			// Get everything set up
 			configureGUI();
 			solidArray(); 
-			fillArray();
+			spawnLoot();
+			//spawnLoot();
+			//spawnLoot();
+			//spawnLoot();
+			//spawnLoot();
 			
 			images = new loadImage(null);
 			
@@ -91,9 +101,9 @@ public class Display implements KeyListener{
 			// Make the frame listen to keystrokes
 			frame.addKeyListener(this);
 			
+			
 		}
-		
-		
+			
 		private void playGame() // The main game loop. This method coordinates everything that happens in the game
 		{
 			Graphics g = playArea.getGraphics();
@@ -106,10 +116,15 @@ public class Display implements KeyListener{
 				handleKeyEntries();
 				
 																				
-				if(leftHeld||rightHeld||upHeld||downHeld){
+				if(leftHeld||rightHeld||upHeld||downHeld||lootFound){
 					drawBkd(g, cat, images);
 					drawCat(g, cat, images);
 					
+				}
+				
+				if(lootFound){
+					spawnLoot();
+					lootFound = false;
 				}
 												
 				// Sleep until it's time to draw the next frame 
@@ -127,7 +142,52 @@ public class Display implements KeyListener{
 			}
 		}
 		
+		private void spawnLoot() {
+			
+			lootLocx = (int) (Math.random()*wid);
+			lootLocy = (int) (Math.random()*hig);
+			
+			System.out.printf("the loot is at %d, %d\n", lootLocx, lootLocy);
+				if(mapSolids[lootLocx][lootLocy] == 'a'||
+					mapSolids[lootLocx][lootLocy] == 'b'||
+					mapSolids[lootLocx][lootLocy] == 'c'||
+					mapSolids[lootLocx][lootLocy] == 'd'||
+					mapSolids[lootLocx][lootLocy] == 'e'){
+					
+					if(loot1off){Loot loot1 = new Loot(lootLocx, lootLocy); loot1off=false;}
+					//if(loot2off){Loot loot2 = new Loot(lootLocx, lootLocy); loot2off=false;}
+					//if(loot3off){Loot loot3 = new Loot(lootLocx, lootLocy); loot3off=false;}
+					//if(loot4off){Loot loot4 = new Loot(lootLocx, lootLocy); loot4off=false;}
+					//if(loot5off){Loot loot5 = new Loot(lootLocx, lootLocy); loot5off=false;}
+					
+					mapSolids[lootLocx][lootLocy] = 'y';
+				}
+				else{spawnLoot();}
+			
+		}
 		
+		private void findLoot(){
+			
+			catsLoc();
+			int loot1x = (lootLocx - 7)%wid;
+			int loot1y = (lootLocy - 3)%hig;
+			int catActualx = ((ar1 - 36 + wid)%wid)+1;
+			int catActualy = ((ar2 - 20 + hig)%hig)+1;
+			
+			System.out.print(catActualx + " = " + loot1x + " + 1 && " + catActualy + " = " + loot1y);
+			
+			if(
+			(catActualx==loot1x+1&&catActualy==loot1y)||
+			(catActualx==loot1x&&catActualy==loot1y+1)||
+			(catActualx==loot1x-1&&catActualy==loot1y)||
+			(catActualx==loot1x&&catActualy==loot1y-1)
+			){
+				mapSolids[lootLocx][lootLocy] = 'a';
+				loot1off = true;
+				lootFound = true;
+			}
+		
+		}
 
 		// Check which keys have been pressed and respond accordingly
 		private void handleKeyEntries()
@@ -140,11 +200,8 @@ public class Display implements KeyListener{
 			if(upHeld)
 				cat.moveUp();
 			if(downHeld)
-				cat.moveDown();
-				
-				
-			}
-		
+				cat.moveDown();	
+		}
 		
 		private void drawCat(Graphics g, Cat s, loadImage l){			
 				
@@ -177,14 +234,24 @@ public class Display implements KeyListener{
 				
 				h = 0;
 				
-				// Loop through each line of the file to read a comet
+				// Loop through each line of the file to read the code for what kind of tile to place.
 				while(fin.hasNext())
 				{
 					char mapSolid = fin.next().charAt(0);
 					
-					mapSolids[w][h] = mapSolid;
+					if(mapSolids[w][h]!='0'){ //These two if statements interpret what to load into the array from the map file.
+					mapSolids[w][h] = mapSolid;}
 					
-					System.out.printf("%s ",mapSolid);
+					if(mapSolids[w][h]=='0'){ //(this one makes the grass random)
+						double random = Math.random();
+						if(random < 0.3){mapSolids[w][h] = 'a';}
+						else if(random > 0.2 && random < 0.4){mapSolids[w][h] = 'b';}
+						else if(random > 0.4 && random < 0.6){mapSolids[w][h] = 'c';}
+						else if(random > 0.6 && random < 0.8){mapSolids[w][h] = 'd';}
+						else if(random > 0.8){mapSolids[w][h] = 'e';}
+						}
+					
+					System.out.printf("%s ",mapSolids[w][h]);
 					w++;
 			
 						if(w==64){
@@ -200,34 +267,6 @@ public class Display implements KeyListener{
 			{
 				
 			}
-		}
-	
-		private void fillArray(){ //builds a randomized array for use as the world map
-			char z = 0;
-			h = 0;
-			
-			while(h<hig){
-				w=0;
-				while(w<wid){
-					double random = Math.random();
-					if(random < 0.3){z = 'a';}
-					else if(random > 0.2 && random < 0.4){z = 'b';}
-					else if(random > 0.4 && random < 0.6){z = 'c';}
-					else if(random > 0.6 && random < 0.8){z = 'd';}
-					else if(random > 0.8){z = 'e';}
-					if(mapSolids[w][h]!='0'){z = mapSolids[w][h];}
-				
-					//I just realized that having solidArray and fillArray is redundant, I could just have one (I think)
-					//but I'll try fixing this later.
-					
-					map[w][h] = z;
-					System.out.printf("%s ",z);
-					w++;
-				}
-				System.out.printf("\n\n");
-				h++;
-			}
-		
 		}
 		
 		private void drawBkd(Graphics g, Cat s, loadImage l){ //takes the tiles loaded into the array "map" and iteratively draws them
@@ -248,6 +287,8 @@ public class Display implements KeyListener{
 			BufferedImage lk8 = l.getlk8(g);
 			BufferedImage lk9 = l.getlk9(g);
 			
+			BufferedImage yCapsule = l.getYcap(g);
+			
 			BufferedImage solid = l.getSolid(g);
 			BufferedImage fin = null;
 			
@@ -267,26 +308,26 @@ public class Display implements KeyListener{
 					
 					catsLoc();
 					
-					if(map[ar1][ar2] == 'a'){fin = bg1;} 
-					if(map[ar1][ar2] == 'b'){fin = bg2;} //These determine the bg tile
-					if(map[ar1][ar2] == 'c'){fin = bg3;} //based on the values loaded into the "map" array.
-					if(map[ar1][ar2] == 'd'){fin = bg4;}
-					if(map[ar1][ar2] == 'e'){fin = bg5;}
-					if(map[ar1][ar2] == '1'){fin = lk1;}
-					if(map[ar1][ar2] == '2'){fin = lk2;}
-					if(map[ar1][ar2] == '3'){fin = lk3;}
-					if(map[ar1][ar2] == '4'){fin = lk4;}
-					if(map[ar1][ar2] == '5'){fin = lk5;}
-					if(map[ar1][ar2] == '6'){fin = lk6;}
-					if(map[ar1][ar2] == '7'){fin = lk7;}
-					if(map[ar1][ar2] == '8'){fin = lk8;}
-					if(map[ar1][ar2] == '9'){fin = lk9;}
-					if(map[ar1][ar2] == 's'){fin = solid;}
+					if(mapSolids[ar1][ar2] == 'a'){fin = bg1;} 
+					if(mapSolids[ar1][ar2] == 'b'){fin = bg2;} //These determine the bg tile
+					if(mapSolids[ar1][ar2] == 'c'){fin = bg3;} //based on the values loaded into the "map" array.
+					if(mapSolids[ar1][ar2] == 'd'){fin = bg4;}
+					if(mapSolids[ar1][ar2] == 'e'){fin = bg5;}
+					if(mapSolids[ar1][ar2] == '1'){fin = lk1;}
+					if(mapSolids[ar1][ar2] == '2'){fin = lk2;}
+					if(mapSolids[ar1][ar2] == '3'){fin = lk3;}
+					if(mapSolids[ar1][ar2] == '4'){fin = lk4;}
+					if(mapSolids[ar1][ar2] == '5'){fin = lk5;}
+					if(mapSolids[ar1][ar2] == '6'){fin = lk6;}
+					if(mapSolids[ar1][ar2] == '7'){fin = lk7;}
+					if(mapSolids[ar1][ar2] == '8'){fin = lk8;}
+					if(mapSolids[ar1][ar2] == '9'){fin = lk9;}
+					if(mapSolids[ar1][ar2] == 's'){fin = solid;}
+					if(mapSolids[ar1][ar2] == 'y'){fin = yCapsule;}
 										
 					g.drawImage(fin,placex,placey,null); //draws the specified tile at placex placey.
 
-					w++;
-								
+					w++;		
 				}
 	
 				h++;
@@ -303,22 +344,21 @@ public class Display implements KeyListener{
 			ar2 = (h+y/tile)%hig;
 		}
 		
-		
-	
-
 	public void keyTyped(KeyEvent arg0) {}
 
 	public void keyPressed(KeyEvent key)
 	{	
-	
-	if(key.getKeyCode() == KeyEvent.VK_LEFT)
-		leftHeld = true;
-	if(key.getKeyCode() == KeyEvent.VK_RIGHT)
-		rightHeld = true;
-	if(key.getKeyCode() == KeyEvent.VK_UP)
-		upHeld = true;
-	if(key.getKeyCode() == KeyEvent.VK_DOWN)
-		downHeld = true;
+		
+		if(key.getKeyCode() == KeyEvent.VK_LEFT)
+			leftHeld = true;
+		if(key.getKeyCode() == KeyEvent.VK_RIGHT)
+			rightHeld = true;
+		if(key.getKeyCode() == KeyEvent.VK_UP)
+			upHeld = true;
+		if(key.getKeyCode() == KeyEvent.VK_DOWN)
+			downHeld = true;
+		if(key.getKeyCode() == KeyEvent.VK_SPACE)
+			pickUp = true;
 	}
 	
 	public void keyReleased(KeyEvent key) 
@@ -332,6 +372,8 @@ public class Display implements KeyListener{
 			upHeld = false;
 		if(key.getKeyCode() == KeyEvent.VK_DOWN)
 			downHeld = false;
+		if(key.getKeyCode() == KeyEvent.VK_SPACE)
+			findLoot();
 	}
 	
 	public static void main(String[] args) 

@@ -31,6 +31,7 @@ public class loadImage {
 	BufferedImage img2 = null;
 	BufferedImage img3 = null;
 	BufferedImage img4 = null;
+	BufferedImage yCapsule = null;
 	BufferedImage imgSolid = null;
 	
 	
@@ -245,6 +246,17 @@ public class loadImage {
 			catch (IOException e){}
 		
 		return lk9;
+	}
+	
+public BufferedImage getYcap(Graphics g){
+		
+		try
+		{
+			yCapsule = ImageIO.read(new File("ycapsule.png"));
+		}	
+			catch (IOException e){}
+		
+		return yCapsule;
 	}
 	
 	
